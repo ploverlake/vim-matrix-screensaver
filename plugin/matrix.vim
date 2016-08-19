@@ -52,6 +52,8 @@ let s:maxdelay = 5
 " Session file for preserving original window layout
 let s:session_file = tempname()
 
+" Flag of existence of minibufexpl window
+let s:minibufexplexists = 0
 
 function! s:Rand()
    let b:seed = b:seed * 22695477 + 1
@@ -170,6 +172,12 @@ function! s:Reset()
 endfunction
 
 function! s:Init()
+   " Check the existence of minibufexpl window
+   if bufwinnr("-MiniBufExplorer-") != -1
+      let s:minibufexplexists = 1
+      silent! MBEClose
+   endif
+
    " Create new buffer and hide the existing buffers.  Hiding the
    " existing buffers without switching to a new buffer preserves
    " undo history.
@@ -180,6 +188,11 @@ function! s:Init()
    " then attempt to create new window
    1 wincmd w
    silent! new
+
+   " Close minibufexpl window if needed
+   if bufwinnr("-MiniBufExplorer-") != -1
+      silent! MBEClose
+   endif
 
    " check that there really is an additional window
    if winnr("$") != s:num_orig_win + 1
@@ -296,6 +309,12 @@ function! s:Cleanup()
 
    " Clear keystroke
    let c = getchar(0)
+
+   " Reopen minibufexpl window if needed
+   if s:minibufexplexists == 1
+      silent! MBEOpen
+      let s:minibufexplexists = 0
+   endif
 endfunction
 
 function! Matrix()
